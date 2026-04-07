@@ -1,6 +1,14 @@
 # Changelog
 
-<!-- last-commit: 44dd90e -->
+<!-- last-commit: 26ad6bf -->
+
+## v1.0.1 - 2026-04-07
+
+| Commit | Description |
+|--------|-------------|
+| `26ad6bf` | feat: version command |
+| `43d71ad` | update CHANGELOG.md |
+
 
 ## v1.0.1 - 2026-04-07
 
