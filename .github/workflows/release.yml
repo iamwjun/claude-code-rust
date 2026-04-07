@@ -23,6 +23,24 @@ jobs:
           echo "name=$NAME" >> $GITHUB_OUTPUT
           echo "version=v$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Update CHANGELOG.md
+        run: |
+          VERSION=${{ steps.pkg.outputs.version }}
+          DATE=$(date +%Y-%m-%d)
+          SHA=${GITHUB_SHA:0:7}
+          ENTRY="## ${VERSION} - ${DATE}\n- Built from commit ${SHA}"
+          HEADER=$(head -1 CHANGELOG.md)
+          BODY=$(tail -n +2 CHANGELOG.md)
+          printf '%s\n\n%s\n\n%s\n' "$HEADER" "$(printf "$ENTRY")" "$BODY" > CHANGELOG.md
+
+      - name: Commit CHANGELOG.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git diff --cached --quiet || git commit -m "chore: update CHANGELOG for ${{ steps.pkg.outputs.version }} [skip ci]"
+          git push origin main
+
       - name: Check if tag already exists
         id: tag
         run: |
