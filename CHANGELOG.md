@@ -1,19 +1,14 @@
 # Changelog
 
-<!-- last-commit: 26ad6bf -->
+<!-- last-commit: 55672a2 -->
 
 ## v1.0.1 - 2026-04-07
 
 | Commit | Description |
 |--------|-------------|
+| `55672a2` | update CHANGELOG.md |
 | `26ad6bf` | feat: version command |
 | `43d71ad` | update CHANGELOG.md |
-
-
-## v1.0.1 - 2026-04-07
-
-| Commit | Description |
-|--------|-------------|
 | `44dd90e` | chore: optimize gitflow |
 | `56c9274` | chore: optimize CHANGELOG.md update |
 
