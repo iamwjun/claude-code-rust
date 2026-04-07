@@ -11,7 +11,6 @@
 
 use crate::types::*;
 use anyhow::{Context, Result};
-use bytes::Bytes;
 use futures::stream::StreamExt;
 use reqwest::Client;
 use serde_json::json;
@@ -203,5 +202,47 @@ impl ClaudeClient {
     /// Set max tokens
     pub fn set_max_tokens(&mut self, max_tokens: u32) {
         self.max_tokens = max_tokens;
+    }
+}
+
+#[cfg(test)]
+impl ClaudeClient {
+    fn model(&self) -> &str {
+        &self.model
+    }
+
+    fn max_tokens(&self) -> u32 {
+        self.max_tokens
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_client_has_default_model() {
+        let client = ClaudeClient::new("test-key").unwrap();
+        assert_eq!(client.model(), "claude-4.5-sonnet");
+    }
+
+    #[test]
+    fn new_client_has_default_max_tokens() {
+        let client = ClaudeClient::new("test-key").unwrap();
+        assert_eq!(client.max_tokens(), 4096);
+    }
+
+    #[test]
+    fn set_model_updates_model() {
+        let mut client = ClaudeClient::new("test-key").unwrap();
+        client.set_model("claude-opus-4-20250514".to_string());
+        assert_eq!(client.model(), "claude-opus-4-20250514");
+    }
+
+    #[test]
+    fn set_max_tokens_updates_value() {
+        let mut client = ClaudeClient::new("test-key").unwrap();
+        client.set_max_tokens(2048);
+        assert_eq!(client.max_tokens(), 2048);
     }
 }

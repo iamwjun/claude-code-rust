@@ -10,11 +10,11 @@
  */
 
 use crate::api::ClaudeClient;
-use crate::types::{ConversationHistory, Message};
+use crate::types::ConversationHistory;
 use anyhow::Result;
 use colored::*;
 use rustyline::error::ReadlineError;
-use rustyline::{DefaultEditor, Result as RustylineResult};
+use rustyline::DefaultEditor;
 use std::env;
 
 /// 启动 REPL 交互界面
@@ -181,4 +181,81 @@ fn print_help() {
     println!("  {}             - 显示此帮助信息", "/help".yellow());
     println!("  {}            - 显示消息数量", "/count".yellow());
     println!();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::ConversationHistory;
+
+    #[tokio::test]
+    async fn exit_command_returns_true() {
+        let mut h = ConversationHistory::new();
+        assert!(handle_command("/exit", &mut h).await);
+    }
+
+    #[tokio::test]
+    async fn quit_command_returns_true() {
+        let mut h = ConversationHistory::new();
+        assert!(handle_command("/quit", &mut h).await);
+    }
+
+    #[tokio::test]
+    async fn clear_command_empties_history() {
+        let mut h = ConversationHistory::new();
+        h.add_user_message("hello");
+        h.add_assistant_message("hi");
+        handle_command("/clear", &mut h).await;
+        assert!(h.is_empty());
+    }
+
+    #[tokio::test]
+    async fn clear_command_returns_false() {
+        let mut h = ConversationHistory::new();
+        assert!(!handle_command("/clear", &mut h).await);
+    }
+
+    #[tokio::test]
+    async fn history_command_preserves_history() {
+        let mut h = ConversationHistory::new();
+        h.add_user_message("test");
+        let result = handle_command("/history", &mut h).await;
+        assert!(!result);
+        assert_eq!(h.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn count_command_preserves_history() {
+        let mut h = ConversationHistory::new();
+        h.add_user_message("a");
+        h.add_assistant_message("b");
+        let result = handle_command("/count", &mut h).await;
+        assert!(!result);
+        assert_eq!(h.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn help_command_returns_false() {
+        let mut h = ConversationHistory::new();
+        assert!(!handle_command("/help", &mut h).await);
+    }
+
+    #[tokio::test]
+    async fn unknown_command_returns_false() {
+        let mut h = ConversationHistory::new();
+        assert!(!handle_command("/unknown", &mut h).await);
+    }
+
+    #[tokio::test]
+    async fn unknown_command_does_not_modify_history() {
+        let mut h = ConversationHistory::new();
+        handle_command("/bogus", &mut h).await;
+        assert!(h.is_empty());
+    }
+
+    #[tokio::test]
+    async fn commands_are_case_insensitive() {
+        let mut h = ConversationHistory::new();
+        assert!(handle_command("/EXIT", &mut h).await);
+    }
 }

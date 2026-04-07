@@ -123,3 +123,120 @@ impl Default for ConversationHistory {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // --- Message ---
+
+    #[test]
+    fn message_new_stores_role_and_content() {
+        let msg = Message::new("user", "hello");
+        assert_eq!(msg.role, "user");
+        assert_eq!(msg.content, "hello");
+    }
+
+    #[test]
+    fn message_user_sets_role() {
+        let msg = Message::user("hi");
+        assert_eq!(msg.role, "user");
+        assert_eq!(msg.content, "hi");
+    }
+
+    #[test]
+    fn message_assistant_sets_role() {
+        let msg = Message::assistant("response");
+        assert_eq!(msg.role, "assistant");
+        assert_eq!(msg.content, "response");
+    }
+
+    // --- ConversationHistory ---
+
+    #[test]
+    fn new_history_is_empty() {
+        let h = ConversationHistory::new();
+        assert!(h.is_empty());
+        assert_eq!(h.len(), 0);
+        assert_eq!(h.get_messages().len(), 0);
+    }
+
+    #[test]
+    fn default_history_is_empty() {
+        let h = ConversationHistory::default();
+        assert!(h.is_empty());
+    }
+
+    #[test]
+    fn add_user_message_increments_len() {
+        let mut h = ConversationHistory::new();
+        h.add_user_message("hello");
+        assert_eq!(h.len(), 1);
+        assert!(!h.is_empty());
+        assert_eq!(h.get_messages()[0].role, "user");
+        assert_eq!(h.get_messages()[0].content, "hello");
+    }
+
+    #[test]
+    fn add_assistant_message_increments_len() {
+        let mut h = ConversationHistory::new();
+        h.add_assistant_message("hi there");
+        assert_eq!(h.len(), 1);
+        assert_eq!(h.get_messages()[0].role, "assistant");
+        assert_eq!(h.get_messages()[0].content, "hi there");
+    }
+
+    #[test]
+    fn messages_stored_in_order() {
+        let mut h = ConversationHistory::new();
+        h.add_user_message("first");
+        h.add_assistant_message("second");
+        h.add_user_message("third");
+        let msgs = h.get_messages();
+        assert_eq!(msgs.len(), 3);
+        assert_eq!(msgs[0].role, "user");
+        assert_eq!(msgs[1].role, "assistant");
+        assert_eq!(msgs[2].role, "user");
+        assert_eq!(msgs[2].content, "third");
+    }
+
+    #[test]
+    fn clear_removes_all_messages() {
+        let mut h = ConversationHistory::new();
+        h.add_user_message("a");
+        h.add_assistant_message("b");
+        h.clear();
+        assert!(h.is_empty());
+        assert_eq!(h.len(), 0);
+    }
+
+    #[test]
+    fn to_json_empty_history_returns_array() {
+        let h = ConversationHistory::new();
+        let json = h.to_json().unwrap();
+        assert_eq!(json.trim(), "[]");
+    }
+
+    #[test]
+    fn to_json_contains_role_and_content() {
+        let mut h = ConversationHistory::new();
+        h.add_user_message("ping");
+        let json = h.to_json().unwrap();
+        assert!(json.contains("\"role\""));
+        assert!(json.contains("\"user\""));
+        assert!(json.contains("\"content\""));
+        assert!(json.contains("\"ping\""));
+    }
+
+    #[test]
+    fn to_json_roundtrips() {
+        let mut h = ConversationHistory::new();
+        h.add_user_message("hello");
+        h.add_assistant_message("world");
+        let json = h.to_json().unwrap();
+        let parsed: Vec<Message> = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.len(), 2);
+        assert_eq!(parsed[0].role, "user");
+        assert_eq!(parsed[1].role, "assistant");
+    }
+}

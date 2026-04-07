@@ -56,7 +56,7 @@ async fn main() -> Result<()> {
 
         // Process complete SSE events
         while let Some(pos) = buffer.find("\n\n") {
-            let event = &buffer[..pos];
+            let event = buffer[..pos].to_string();
             buffer = buffer[pos + 2..].to_string();
 
             // Parse "data: {...}" format
