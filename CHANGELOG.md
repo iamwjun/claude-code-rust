@@ -1,6 +1,13 @@
 # Changelog
 
-<!-- last-commit: 56c9274 -->
+<!-- last-commit: 44dd90e -->
+
+## v1.0.1 - 2026-04-07
+
+| Commit | Description |
+|--------|-------------|
+| `44dd90e` | chore: optimize gitflow |
+
 
 ## v1.0.0 - 2026-04-07
 
