@@ -1,6 +1,13 @@
 # Changelog
 
-<!-- last-commit: 5fe9ae8 -->
+<!-- last-commit: 56c9274 -->
+
+## v1.0.0 - 2026-04-07
+
+| Commit | Description |
+|--------|-------------|
+| `56c9274` | chore: optimize CHANGELOG.md update |
+
 
 ## v1.0.0 - 2026-04-07
 

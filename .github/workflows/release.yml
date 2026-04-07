@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Read package info from Cargo.toml
+      - name: Read version from Cargo.toml
         id: pkg
         run: |
           NAME=$(grep '^name' Cargo.toml | head -1 | sed 's/.*= *//' | tr -d '"')
@@ -23,17 +23,20 @@ jobs:
           echo "name=$NAME" >> $GITHUB_OUTPUT
           echo "version=v$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Check if tag already exists
+      - name: Check if version tag already exists
         id: tag
         run: |
-          if git rev-parse "${{ steps.pkg.outputs.version }}" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+          VERSION=${{ steps.pkg.outputs.version }}
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "⏭️  Tag $VERSION already exists — skipping release"
+            echo "should_release=false" >> $GITHUB_OUTPUT
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "🆕 New version $VERSION detected — proceeding with release"
+            echo "should_release=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Create and push git tag
-        if: steps.tag.outputs.exists == 'false'
+        if: steps.tag.outputs.should_release == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -41,18 +44,21 @@ jobs:
           git push origin ${{ steps.pkg.outputs.version }}
 
       - name: Install Rust toolchain
+        if: steps.tag.outputs.should_release == 'true'
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build release binary
+        if: steps.tag.outputs.should_release == 'true'
         run: cargo build --release
 
       - name: Package binary
+        if: steps.tag.outputs.should_release == 'true'
         run: |
           NAME=${{ steps.pkg.outputs.name }}
           tar -czvf ${NAME}-aarch64-apple-darwin.tar.gz -C target/release ${NAME}
 
       - name: Upload to GitHub Release
-        if: steps.tag.outputs.exists == 'false'
+        if: steps.tag.outputs.should_release == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.pkg.outputs.version }}
