@@ -27,13 +27,11 @@ pub struct ClaudeClient {
 
 impl ClaudeClient {
     /// Create a new client instance
-    /// https://lab.iwhalecloud.com/gpt-proxy/anthropic
-    /// https://api.anthropic.com/v1
     pub fn new(api_key: &str) -> Result<Self> {
         Ok(Self {
             api_key: api_key.to_string(),
             client: Client::new(),
-            base_url: "https://lab.iwhalecloud.com/gpt-proxy/anthropic".to_string(),
+            base_url: "https://api.anthropic.com/v1".to_string(),
             model: "claude-4.5-sonnet".to_string(),
             max_tokens: 4096,
         })
