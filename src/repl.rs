@@ -1,12 +1,12 @@
 /*!
- * REPL 交互界面模块
+ * REPL Interactive Interface Module
  *
- * 对应源码: src/main.tsx - REPL 实现
+ * Corresponds to: src/main.tsx - REPL implementation
  *
- * 功能：
- * - 交互式命令行界面
- * - 对话历史管理
- * - 命令处理
+ * Features:
+ * - Interactive command-line interface
+ * - Conversation history management
+ * - Command handling
  */
 
 use crate::api::ClaudeClient;
@@ -17,62 +17,62 @@ use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 use std::env;
 
-/// 启动 REPL 交互界面
+/// Start the REPL interactive interface
 pub async fn start_repl(api_key: &str) -> Result<()> {
-    // 打印使用说明
+    // Print usage instructions
     print_instructions(api_key);
 
-    // 创建 API 客户端
+    // Create API client
     let client = ClaudeClient::new(api_key)?;
 
-    // 创建对话历史
+    // Create conversation history
     let mut history = ConversationHistory::new();
 
-    // 创建 readline 编辑器
+    // Create readline editor
     let mut rl = DefaultEditor::new()?;
 
-    // 主循环
+    // Main loop
     loop {
-        // 读取用户输入
+        // Read user input
         let readline = rl.readline(&format!("\n{} ", "💬 You >".green().bold()));
 
         match readline {
             Ok(line) => {
                 let input = line.trim();
 
-                // 跳过空输入
+                // Skip empty input
                 if input.is_empty() {
                     continue;
                 }
 
-                // 添加到 readline 历史
+                // Add to readline history
                 let _ = rl.add_history_entry(input);
 
-                // 处理命令
+                // Handle commands
                 if input.starts_with('/') {
                     if handle_command(input, &mut history).await {
-                        break; // 退出
+                        break; // Exit
                     }
                     continue;
                 }
 
-                // 发送消息到 Claude
+                // Send message to Claude
                 if let Err(e) = send_message(&client, input, &mut history).await {
-                    eprintln!("\n{} {}", "❌ 错误:".red().bold(), e);
+                    eprintln!("\n{} {}", "❌ Error:".red().bold(), e);
                 }
             }
             Err(ReadlineError::Interrupted) => {
                 // Ctrl+C
-                println!("\n{}", "使用 /exit 或 /quit 退出".yellow());
+                println!("\n{}", "Use /exit or /quit to exit".yellow());
                 continue;
             }
             Err(ReadlineError::Eof) => {
                 // Ctrl+D
-                println!("\n{}", "👋 再见!".cyan());
+                println!("\n{}", "👋 Goodbye!".cyan());
                 break;
             }
             Err(err) => {
-                eprintln!("{} {:?}", "❌ 读取输入错误:".red().bold(), err);
+                eprintln!("{} {:?}", "❌ Error reading input:".red().bold(), err);
                 break;
             }
         }
@@ -81,18 +81,18 @@ pub async fn start_repl(api_key: &str) -> Result<()> {
     Ok(())
 }
 
-/// 打印使用说明
+/// Print usage instructions
 fn print_instructions(api_key: &str) {
-    println!("{}", "📝 使用说明:".cyan().bold());
-    println!("  - 输入消息后按 Enter 发送");
-    println!("  - 输入 {} 或 {} 退出", "/exit".yellow(), "/quit".yellow());
-    println!("  - 输入 {} 清空对话历史", "/clear".yellow());
-    println!("  - 输入 {} 查看对话历史", "/history".yellow());
-    println!("  - 输入 {} 显示帮助", "/help".yellow());
+    println!("{}", "📝 Instructions:".cyan().bold());
+    println!("  - Type a message and press Enter to send");
+    println!("  - Type {} or {} to exit", "/exit".yellow(), "/quit".yellow());
+    println!("  - Type {} to clear conversation history", "/clear".yellow());
+    println!("  - Type {} to view conversation history", "/history".yellow());
+    println!("  - Type {} to show help", "/help".yellow());
     println!();
 
-    let model = env::var("CLAUDE_MODEL").unwrap_or_else(|_| "claude-opus-4-20250514".to_string());
-    println!("{} {}", "🔧 当前模型:".cyan().bold(), model.white());
+    let model = env::var("CLAUDE_MODEL").unwrap_or_else(|_| "claude-4.5-sonnet".to_string());
+    println!("{} {}", "🔧 Model:".cyan().bold(), model.white());
 
     let masked_key = if api_key.len() > 8 {
         format!("{}...", &api_key[..8])
@@ -103,49 +103,49 @@ fn print_instructions(api_key: &str) {
     println!();
 }
 
-/// 发送消息到 Claude
+/// Send message to Claude
 async fn send_message(
     client: &ClaudeClient,
     input: &str,
     history: &mut ConversationHistory,
 ) -> Result<()> {
-    // 添加用户消息到历史
+    // Add user message to history
     history.add_user_message(input);
 
-    println!("\n{}", "🤖 Claude 正在思考...\n".yellow());
+    println!("\n{}", "🤖 Claude is thinking...\n".yellow());
 
-    // 调用 API (流式响应)
+    // Call API (streaming response)
     let response = client.query_streaming(input, history.get_messages()).await?;
 
-    // 添加助手响应到历史
+    // Add assistant response to history
     history.add_assistant_message(&response);
 
-    println!(); // 换行
+    println!(); // New line
     Ok(())
 }
 
-/// 处理命令
-/// 返回 true 表示退出
+/// Handle commands
+/// Returns true to exit
 async fn handle_command(command: &str, history: &mut ConversationHistory) -> bool {
     match command.to_lowercase().as_str() {
         "/exit" | "/quit" => {
-            println!("\n{}", "👋 再见!".cyan());
+            println!("\n{}", "👋 Goodbye!".cyan());
             return true;
         }
 
         "/clear" => {
             history.clear();
-            println!("\n{}", "✅ 对话历史已清空".green());
+            println!("\n{}", "✅ Conversation history cleared".green());
         }
 
         "/history" => {
-            println!("\n{}", "📜 对话历史:".cyan().bold());
+            println!("\n{}", "📜 Conversation history:".cyan().bold());
             if history.is_empty() {
-                println!("  {}", "(空)".dimmed());
+                println!("  {}", "(empty)".dimmed());
             } else {
                 match history.to_json() {
                     Ok(json) => println!("{}", json),
-                    Err(e) => eprintln!("{} {}", "❌ 序列化失败:".red(), e),
+                    Err(e) => eprintln!("{} {}", "❌ Serialization failed:".red(), e),
                 }
             }
         }
@@ -157,29 +157,38 @@ async fn handle_command(command: &str, history: &mut ConversationHistory) -> boo
         "/count" => {
             println!(
                 "\n{} {}",
-                "📊 消息数量:".cyan().bold(),
+                "📊 Message count:".cyan().bold(),
                 history.len()
             );
         }
 
+        "/version" => {
+            println!(
+                "\n{} {}",
+                "📦 Version:".cyan().bold(),
+                env!("CARGO_PKG_VERSION").white()
+            );
+        }
+
         _ => {
-            println!("\n{} {}", "❌ 未知命令:".red().bold(), command);
-            println!("输入 {} 查看可用命令", "/help".yellow());
+            println!("\n{} {}", "❌ Unknown command:".red().bold(), command);
+            println!("Type {} to see available commands", "/help".yellow());
         }
     }
 
     false
 }
 
-/// 打印帮助信息
+/// Print help information
 fn print_help() {
-    println!("\n{}", "📖 可用命令:".cyan().bold());
+    println!("\n{}", "📖 Available commands:".cyan().bold());
     println!();
-    println!("  {}          - 退出程序", "/exit, /quit".yellow());
-    println!("  {}            - 清空对话历史", "/clear".yellow());
-    println!("  {}          - 查看对话历史 (JSON 格式)", "/history".yellow());
-    println!("  {}             - 显示此帮助信息", "/help".yellow());
-    println!("  {}            - 显示消息数量", "/count".yellow());
+    println!("  {}          - Exit the program", "/exit, /quit".yellow());
+    println!("  {}            - Clear conversation history", "/clear".yellow());
+    println!("  {}          - View conversation history (JSON format)", "/history".yellow());
+    println!("  {}             - Show this help", "/help".yellow());
+    println!("  {}            - Show message count", "/count".yellow());
+    println!("  {}          - Show current version", "/version".yellow());
     println!();
 }
 
@@ -238,6 +247,12 @@ mod tests {
     async fn help_command_returns_false() {
         let mut h = ConversationHistory::new();
         assert!(!handle_command("/help", &mut h).await);
+    }
+
+    #[tokio::test]
+    async fn version_command_returns_false() {
+        let mut h = ConversationHistory::new();
+        assert!(!handle_command("/version", &mut h).await);
     }
 
     #[tokio::test]
