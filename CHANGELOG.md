@@ -7,12 +7,6 @@
 | Commit | Description |
 |--------|-------------|
 | `44dd90e` | chore: optimize gitflow |
-
-
-## v1.0.0 - 2026-04-07
-
-| Commit | Description |
-|--------|-------------|
 | `56c9274` | chore: optimize CHANGELOG.md update |
 
 
