@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.0 - 2026-04-07
+- Built from commit 2632544
+
+
 ## Initial Implementation
 
 ### Core Features
