@@ -1,51 +1,34 @@
 # Changelog
 
+<!-- last-commit: 5fe9ae8 -->
+
 ## v1.0.0 - 2026-04-07
-- Built from commit 2632544
 
+| Commit | Description |
+|--------|-------------|
+| `5fe9ae8` | chore: update CHANGELOG for v1.0.0 [skip ci] |
+| `2632544` | feat: support bash install (#1) |
+| `2c6dd48` | ci: add GitHub Actions release workflow |
+| `75df915` | docs: add CHANGELOG.md |
+| `3720a04` | test: unit tests |
+| `888c7a9` | feat: first version |
+| `ccb2483` | Initial commit |
 
-## Initial Implementation
-
-### Core Features
+### Features
 
 - **Interactive REPL** — persistent multi-turn conversation with Claude via `rustyline`
 - **Single-shot query mode** — pass a prompt as CLI argument for one-off queries
 - **Streaming responses** — real-time output via Server-Sent Events (SSE) parsing
 - **Conversation history** — full message history sent with each request for context retention
+- **Bash install script** — one-line install from GitHub Releases with platform auto-detection
+- **GitHub Actions release workflow** — auto tag, build, package, and publish on push to main
 
-### REPL Commands
-
-| Command    | Description                        |
-|------------|------------------------------------|
-| `/help`    | Show available commands            |
-| `/clear`   | Clear conversation history         |
-| `/history` | Print conversation history as JSON |
-| `/count`   | Show number of messages in history |
-| `/exit`    | Exit the program                   |
-
-### API Client (`src/api.rs`)
-
-- `ClaudeClient::new` — initializes client with configurable base URL, model, and max tokens
-- `query_streaming` — streams response chunks to stdout in real time
-- `query` — non-streaming variant, returns full `ApiResponse`
-- `set_model` / `set_max_tokens` — runtime configuration
-
-### Unit Tests (`cargo test`)
+### Unit Tests
 
 26 tests across three modules:
 
-| Module       | Tests | What's covered |
-|--------------|-------|----------------|
-| `types`      | 12    | `Message` constructors, `ConversationHistory` all methods, JSON roundtrip |
-| `api`        | 4     | Default values on `ClaudeClient::new`, `set_model`, `set_max_tokens` |
-| `repl`       | 10    | All `handle_command` branches, case-insensitivity |
-
-### Examples (`examples/`)
-
-| File              | Demonstrates |
-|-------------------|-------------|
-| `basic.rs`        | Simple non-streaming API call |
-| `streaming.rs`    | SSE streaming response |
-| `conversation.rs` | Multi-turn conversation with context |
-| `custom_model.rs` | Different models and temperature settings |
-| `error_handling.rs` | Invalid API key, empty message, token limit validation |
+| Module  | Tests | What's covered |
+|---------|-------|----------------|
+| `types` | 12    | `Message` constructors, `ConversationHistory` all methods, JSON roundtrip |
+| `api`   | 4     | Default values on `ClaudeClient::new`, `set_model`, `set_max_tokens` |
+| `repl`  | 10    | All `handle_command` branches, case-insensitivity |
